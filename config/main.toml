@@ -1,0 +1,12 @@
+[wallet]
+key="8dvfYSt5d1taSd6yJdpjq4emkwsPDDLYxkNFysFD2cZY"
+name="wallet_name3"
+kdf="RAW"
+
+[pool]
+name="pool_name3"
+network="main"
+
+[application]
+port=4000
+log_level="debug"

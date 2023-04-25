@@ -1,0 +1,21 @@
+name: Start services
+
+inputs:
+  github-token:
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ inputs.github-token }}
+
+    - name: Start services
+      run: |
+        docker-compose -f ./ci/docker-compose.yml up -d
+        sleep 5
+      shell: bash

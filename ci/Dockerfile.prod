@@ -1,0 +1,9 @@
+FROM ghcr.io/hyperledger/aries-vcx/alpine-core:main as base
+
+COPY src/ src/
+COPY Cargo.* .
+RUN cargo build --bin driver-did-sov
+
+COPY genesis/ genesis/
+
+ENTRYPOINT ["./target/debug/driver-did-sov"]
