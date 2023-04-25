@@ -1,0 +1,31 @@
+version: '3.5'
+
+services:
+  mysql:
+    container_name: mysql
+    image: mysql:5.7.35
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-mysecretpassword}
+    network_mode: host
+
+  indypool:
+    image: ghcr.io/hyperledger/aries-vcx/indy_pool_localhost:1.15.0
+    container_name: indypool
+    network_mode: host
+
+  driver-did-sov:
+    image: ${DOCKER_IMAGE_DRIVER_DID_SOV}
+    container_name: driver-did-sov
+    network_mode: host
+    depends_on:
+      - mysql
+      - indypool
+    environment:
+      - WALLET::KEY=8dvfYSt5d1taSd6yJdpjq4emkwsPDDLYxkNFysFD2cZY
+      - WALLET::NAME=wallet_name1
+      - WALLET::KDF=RAW
+      - POOL::NAME=pool_name1
+      - POOL::NETWORK=localhost
+      - APPLICATION::PORT=4000
+      - APPLICATION::LOG_LEVEL=debug
+
