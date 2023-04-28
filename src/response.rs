@@ -21,6 +21,7 @@ use axum::{
 };
 use serde_json::Value;
 
+#[derive(Debug, Clone)]
 pub struct DIDJsonResponse(pub Value);
 
 impl IntoResponse for DIDJsonResponse {

@@ -1293,7 +1293,7 @@ checksum = "77c90badedccf4105eca100756a0b1289e191f6fcbdadd3cee1d2f614f97da8f"
 
 [[package]]
 name = "driver-did-sov"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "anyhow",
  "aries-vcx",
@@ -1302,6 +1302,7 @@ dependencies = [
  "did_resolver_sov",
  "hyper",
  "log",
+ "lru 0.10.0",
  "rstest",
  "serde",
  "serde_json",

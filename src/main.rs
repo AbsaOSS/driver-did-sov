@@ -20,24 +20,23 @@ extern crate log;
 mod config;
 mod error;
 mod init;
+mod resolve;
 mod response;
 
 use anyhow::Context;
 use axum::Server;
-use axum::{extract::Path, routing::get, Extension, Router};
-use did_resolver_sov::did_resolver::traits::resolvable::DIDResolvable;
-use did_resolver_sov::did_resolver::{
-    did_parser::ParsedDID, traits::resolvable::resolution_options::DIDResolutionOptions,
-};
-use did_resolver_sov::resolution::DIDSovResolver;
-use error::DidSovDriverError;
+use axum::{routing::get, Extension, Router};
+use lru::LruCache;
 use response::DIDJsonResponse;
-use serde_json::json;
+use std::num::NonZeroUsize;
+use std::time::Instant;
 use std::{net::SocketAddr, sync::Arc};
+use tokio::sync::Mutex;
 use tower_http::trace::TraceLayer;
 
 use crate::config::Config;
 use crate::init::initialize_resolver_from_config;
+use resolve::resolve_did;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
@@ -48,10 +47,13 @@ async fn main() -> Result<(), anyhow::Error> {
         .init();
 
     let resolver = initialize_resolver_from_config(&config).await?;
+    let cache =
+        LruCache::<String, (Instant, DIDJsonResponse)>::new(NonZeroUsize::new(100).unwrap());
     let app = Router::new()
         .route("/1.0/identifiers/:did", get(resolve_did))
         .layer(Extension(Arc::new(resolver)))
-        .layer(TraceLayer::new_for_http());
+        .layer(TraceLayer::new_for_http())
+        .with_state(Arc::new(Mutex::new(cache)));
 
     let addr = SocketAddr::from(([0, 0, 0, 0], config.application.port));
     info!("Server listening on http://{}", addr);
@@ -59,19 +61,4 @@ async fn main() -> Result<(), anyhow::Error> {
         .serve(app.into_make_service())
         .await
         .context("Server failed")
-}
-
-async fn resolve_did(
-    Extension(resolver): Extension<Arc<DIDSovResolver>>,
-    Path(did): Path<String>,
-) -> Result<DIDJsonResponse, DidSovDriverError> {
-    let did = ParsedDID::parse(did)?;
-    let resolution_output = resolver
-        .resolve(&did, &DIDResolutionOptions::default())
-        .await?;
-    Ok(DIDJsonResponse(json!({
-        "didDocument": resolution_output.did_document(),
-        "didResolutionMetadata": resolution_output.did_resolution_metadata(),
-        "didDocumentMetadata": resolution_output.did_document_metadata(),
-    })))
 }

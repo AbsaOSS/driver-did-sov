@@ -9,4 +9,4 @@ network="localhost"
 
 [application]
 port=4000
-log_level="debug"
+log_level="info"

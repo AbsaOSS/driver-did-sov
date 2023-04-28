@@ -28,7 +28,6 @@ use aries_vcx::utils::devsetup::SetupProfile;
 use utils::send_request;
 
 #[tokio::test]
-#[ignore = "Fails in CI"]
 async fn test_resolver_performance() {
     SetupProfile::run(|init| async move {
         let did = format!("did:sov:{}", init.institution_did);
